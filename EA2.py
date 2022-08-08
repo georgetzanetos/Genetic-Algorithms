@@ -117,8 +117,7 @@ def mutation(offsprings):
         int_random_value = randint(0,offsprings.shape[1]-1)    
         mutants[i,int_random_value] += np.random.uniform(-1.0, 1.0, 1)
         
-    return mutants
-    
+    return mutants    
 
 
 def GA_model(training_data):
