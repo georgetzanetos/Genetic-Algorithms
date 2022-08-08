@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 env = gym.make("CartPole-v0")
 env.reset()
-goal_steps = 210
+goal_steps = 200
 score_requirement = 50
 initial_games = 10000
 
