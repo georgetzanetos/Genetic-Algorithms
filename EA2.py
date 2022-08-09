@@ -108,7 +108,7 @@ def crossover(parents, num_offsprings):
 
 def mutation(offsprings):
     mutants = np.empty((offsprings.shape))
-    mutation_rate = 0.4
+    mutation_rate = 0.05
     for i in range(mutants.shape[0]):
         random_value = random.random()
         mutants[i,:] = offsprings[i,:]
