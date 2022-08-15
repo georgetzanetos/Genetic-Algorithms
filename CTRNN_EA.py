@@ -45,8 +45,7 @@ class CTRNN_agent(object):
         external_inputs = np.asarray([0.0]*self.network_size)
         external_inputs[0:self.n_observations] = observation
         self.cns.euler_step(external_inputs)
-        output = round(np.random.rand())
-        # (self.cns.outputs[-self.n_actions:])
+        output = (self.cns.outputs[-self.n_actions:])
         return output
 
 def run_cartpole(agent, simulation_seed=0, n_episodes=1, env=gym.make('CartPole-v1'), max_steps = 1000, graphics=False):
@@ -72,7 +71,7 @@ def run_cartpole(agent, simulation_seed=0, n_episodes=1, env=gym.make('CartPole-
             if done:
                 break
 
-    env.close()    
+    # env.close()    
     
     return cumulative_reward;
 
@@ -114,7 +113,7 @@ genome_size = (network_size+3)*network_size
 
 # Evolutionary algorithm:
 n_individuals = 1
-n_generations = 1
+n_generations = 5
 p_mut = 0.05
 n_best = 3
 
@@ -128,13 +127,18 @@ Best = []
 fitness_best = []
 
 for g in range(n_generations):
-    
-    # evaluate:
-    for i in range(n_individuals):
+    for i in range (n_individuals):
         Reward[i] = evaluate(Population[i, :], original_reward=original_reward)
-    mean_fitness[g] = np.mean(Reward)
-    max_fitness[g] = np.max(Reward)
-    print('Generation {}, mean = {} max = {}'.format(g, mean_fitness[g], max_fitness[g]))
+
+
+# for g in range(n_generations):
+    
+#     # evaluate:
+#     for i in range(n_individuals):
+#         Reward[i] = evaluate(Population[i, :], original_reward=original_reward)
+#     mean_fitness[g] = np.mean(Reward)
+#     max_fitness[g] = np.max(Reward)
+#     print('Generation {}, mean = {} max = {}'.format(g, mean_fitness[g], max_fitness[g]))
 #     # select:
 #     inds = np.argsort(Reward)
 #     inds = inds[-n_best:]
