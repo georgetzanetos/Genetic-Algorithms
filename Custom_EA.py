@@ -1,13 +1,22 @@
+import gym
+import numpy as np
+from CTRNN import CTRNN
+
+
 if __name__ == "__main__":
+
     population = pop0()
     model = train_model(population)
     scores = []
     choices = []
+
     for each_game in range(10):
+
         score = 0
         game_memory = []
         prev_obs = []
         env.reset()
+
         for _ in range(goal_steps):
             env.render()
 
@@ -29,3 +38,4 @@ if __name__ == "__main__":
     print('Average Score:',sum(scores)/len(scores))
     print('choice 1:{}  choice 0:{}'.format(choices.count(1)/len(choices),choices.count(0)/len(choices)))
     print(score_requirement)
+
