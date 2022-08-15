@@ -1,6 +1,7 @@
 from matplotlib import pyplot as plt
 from CTRNN import CTRNN
 from scipy.sparse import csr_matrix
+import run_cart
 import gym
 import numpy as np
 
@@ -9,7 +10,7 @@ class CTRNN_agent(object):
     
     """ Continuous Time Recurrent Neural Network agent. """
     
-    n_observations = 2;
+    n_observations = 4;
     n_actions = 1;
     
     def __init__(self, network_size, genome = [], weights=[], taus = [], gains = [], biases = []):
@@ -48,52 +49,24 @@ class CTRNN_agent(object):
         output = 2.0 * (self.cns.outputs[-self.n_actions:] - 0.5)
         return output
 
-
 def evaluate(genome, seed = 0, graphics = False, original_reward=True):
     # create the phenotype from the genotype:
+    n_neurons  = 10
+    weights = np.zeros([n_neurons, n_neurons])
+    taus = np.asarray([0.1]*n_neurons)
+    gains = np.ones([n_neurons,])
+    biases = np.zeros([n_neurons,])
+    agent = CTRNN_agent(n_neurons, weights=weights, taus = taus, gains = gains, biases = biases)
+    reward = run_cart_continuous(agent, simulation_seed=0, env=CMC_original(), graphics=True)
+
     agent = CTRNN_agent(n_neurons, genome=genome)
+    
     # run the agent:
     if(original_reward):
         reward = run_cart.run_cart_continuous(agent, simulation_seed=seed, graphics=graphics)
     else:
-        reward = run_cart.run_cart_continuous(agent, env=run_cart.CMC(), simulation_seed=seed, graphics=graphics)
+        reward = run_cart.run_cart_continuous(agent, env=run_cart.CMC_original(), simulation_seed=seed, graphics=graphics)
     #print('Reward = ' + str(reward))
-
-def run_cartpole(agent, simulation_seed=0, n_episodes=1, env=gym.make("CartPole-v0"), max_steps = 1000, graphics=False):
-    #gym.make('MountainCarContinuous-v0') # CMC() # cc.Continuous_MountainCarEnv()
-    env.seed(simulation_seed)
-
-    reward = 0
-    cumulative_reward = 0
-    done = False
-    step = 0
-
-    for i in range(n_episodes):
-        ob = env.reset()
-        while True:
-            action = agent.act(ob, reward, done)
-            ob, reward, done, _ = env.step(action)
-            cumulative_reward += reward
-            step += 1
-            if(step >= max_steps):
-                done = True
-            if(graphics):
-                env.render()
-            if done:
-                break
-
-    env.close()    
-    
-    return cumulative_reward;    
-
-
-def evaluate(genome, seed = 0, graphics = False, original_reward=True):
-    # create the phenotype from the genotype:
-    n_neurons = 10
-    agent = CTRNN_agent(n_neurons, genome=genome)
-    # run the agent:
-    reward = run_cartpole(agent, simulation_seed=seed, graphics=graphics)
-
     return reward
 
 def test_best(Best, original_reward=True):    
@@ -125,6 +98,7 @@ max_fitness = np.zeros([n_generations,])
 mean_fitness = np.zeros([n_generations,])
 Best = []
 fitness_best = []
+
 for g in range(n_generations):
     
     # evaluate:
@@ -137,7 +111,7 @@ for g in range(n_generations):
     inds = np.argsort(Reward)
     inds = inds[-n_best:]
     if(len(Best) == 0 or Reward[-1] > fitness_best):
-        Best = Population[inds[-1], :]
+        Best = Population[inds[-1], :] 
         fitness_best = Reward[-1]
     # vary:
     NewPopulation = np.zeros([n_individuals, genome_size])
