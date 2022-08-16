@@ -4,6 +4,9 @@ from scipy.sparse import csr_matrix
 import gym
 import numpy as np
 
+def sigmoid(x):
+    return 1.0/(1.0 + np.exp(-x))
+
 # added unpacking of genome:
 class CTRNN_agent(object):
     
@@ -42,10 +45,11 @@ class CTRNN_agent(object):
             self.gains = gains
     
     def act(self, observation, reward, done):
-        external_inputs = np.asarray([0.0]*self.network_size)
+        external_inputs = np.asarray([0]*self.network_size)
         external_inputs[0:self.n_observations] = observation
         self.cns.euler_step(external_inputs)
-        output = (self.cns.outputs[-self.n_actions:])
+        output = sigmoid(external_inputs)
+        # (self.cns.outputs[-self.n_actions:])
         return output
 
 def run_cartpole(agent, simulation_seed=0, n_episodes=1, env=gym.make('CartPole-v1'), max_steps = 1000, graphics=False):
