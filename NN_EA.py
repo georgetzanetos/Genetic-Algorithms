@@ -97,18 +97,18 @@ class Population :
         self.population = nextGen
 
 
-def replayBestBots(bestNeuralNets, steps, sleep):  
-    for i in range(len(bestNeuralNets)):
-        if i%steps == 0 :
-            observation = env.reset()
-            print("Generation %3d had a best fitness of %4d" % (i, bestNeuralNets[i].fitness))
-            for step in range(MAX_STEPS):
-                env.render()
-                time.sleep(sleep)
-                action = bestNeuralNets[i].getOutput(observation)
-                observation, reward, done, info = env.step(action)
-                if done:
-                    break
+# def replayBestBots(bestNeuralNets, steps, sleep):  
+#     for i in range(len(bestNeuralNets)):
+#         if i%steps == 0 :
+#             observation = env.reset()
+#             print("Generation %3d had a best fitness of %4d" % (i, bestNeuralNets[i].fitness))
+#             for step in range(MAX_STEPS):
+#                 env.render()
+#                 time.sleep(sleep)
+#                 action = bestNeuralNets[i].getOutput(observation)
+#                 observation, reward, done, info = env.step(action)
+#                 if done:
+#                     break
             
 
 def uploadSimulation():
@@ -128,7 +128,6 @@ MUTATION_RATE = 0.001
 
 
 env = gym.make('CartPole-v1')
-# env.monitor.start('Artificial Intelligence/CartPole v1', force=True)
 observation = env.reset()
 
 in_dimen = env.observation_space.shape[0]
