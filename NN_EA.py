@@ -163,7 +163,7 @@ for gen in range(MAX_GENERATIONS):
     print("Generation : %3d |  Avg Fitness : %4.0f  |  Max Fitness : %4.0f  " % (gen+1, genAvgFit, maxFit) )
     pop.createNewGeneration()
         
-env.monitor.close()
+env.close()
 
 uploadSimulation()
 
