@@ -74,6 +74,51 @@ class Population :
         self.population.clear()
         self.population = nextGen
 
+MAX_GENERATIONS = 5
+MAX_STEPS = 500 
+POPULATION_COUNT = 5
+MUTATION_RATE = 0.001
+
+
+env = gym.make('CartPole-v1')
+observation = env.reset()
+
+in_dimen = env.observation_space.shape[0]
+out_dimen = env.action_space.n
+pop = Population(POPULATION_COUNT, MUTATION_RATE, [in_dimen, 8, 8, out_dimen])
+
+bestNeuralNets = []
+
+for gen in range(MAX_GENERATIONS):
+    genAvgFit = 0.0
+    maxFit = 0.0
+    maxNeuralNet = None
+    for nn in pop.population:
+        totalReward = 0
+        
+        for step in range(MAX_STEPS):
+            env.render()
+            action = nn.getOutput(observation)
+            observation, reward, done, info = env.step(action)
+            totalReward += reward
+            if done:
+                observation = env.reset()
+                break
+        nn.fitness = totalReward
+        genAvgFit += nn.fitness
+        if nn.fitness > maxFit :
+            maxFit = nn.fitness
+            maxNeuralNet = nn
+
+    bestNeuralNets.append(maxNeuralNet)
+    genAvgFit/=pop.popCount
+    print("Generation : %3d |  Avg Fitness : %4.0f  |  Max Fitness : %4.0f  " % (gen+1, genAvgFit, maxFit) )
+    pop.createNewGeneration()
+        
+env.close()
+
+uploadSimulation()
+
 
 # added unpacking of genome:
 class CTRNN_agent(object):
