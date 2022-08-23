@@ -1,131 +1,25 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Mar 19 22:04:38 2020
+
+Evolve CTRNNs for the mountain car task
+
+@author: guido
+"""
+
 from matplotlib import pyplot as plt
 from CTRNN import CTRNN
 from scipy.sparse import csr_matrix
+import run_cart
 import gym
 import numpy as np
-
-def sigmoid(x):
-    return 1.0/(1.0 + np.exp(-x))
-
-
-class NN_agent :
-    
-    def __init__(self, n_nodes):     
-
-        self.fitness = 0
-        self.nodes = n_nodes
-        self.weights = []
-        self.biases = []
-        for i in range(len(n_nodes) - 1):
-            self.weights.append( np.random.uniform(low=-1, high=1, size=(n_nodes[i], n_nodes[i+1])).tolist() )
-            self.biases.append( np.random.uniform(low=-1, high=1, size=(n_nodes[i+1])).tolist())
-
-  
-    def getoutput(self, input):
-
-        output = input
-        for i in range(len(self.nodes)-1):
-            output = np.reshape(np.matmul(output, self.weights[i]) + self.biases[i], (self.nodes[i+1]))
-        return np.argmax(sigmoid(output))
-
-class Population :
-
-    def __init__(self, populationCount, mutationRate, n_nodes):
-        self.nodeCount = n_nodes
-        self.popCount = populationCount
-        self.m_rate = mutationRate
-        self.population = [NN_agent(n_nodes) for i in range(populationCount)]
-
-
-    def createChild(self, nn1, nn2):
-        
-        child = NN_agent(self.nodeCount)
-
-        for i in range(len(child.weights)):
-            for j in range(len(child.weights[i])):
-                for k in range(len(child.weights[i][j])):
-                    if random.random() < self.m_rate:
-                        child.weights[i][j][k] = random.uniform(-1, 1)
-                    else:
-                        child.weights[i][j][k] = (nn1.weights[i][j][k] + nn2.weights[i][j][k])/2.0
-
-        for i in range(len(child.biases)):
-            for j in range(len(child.biases[i])):
-                if random.random() < self.m_rate:
-                    child.biases[i][j] = random.uniform(-1, 1)
-                else:
-                    child.biases[i][j] = (nn1.biases[i][j] + nn2.biases[i][j])/2.0
-
-        return child
-
-
-    def createNewGeneration(self):       
-        nextGen = []
-        fitnessSum = [0]
-        for i in range(len(self.population)):
-            fitnessSum.append(fitnessSum[i]+self.population[i].fitness)
-        
-        while(len(nextGen) < self.popCount):
-            r1 = random.uniform(0, fitnessSum[len(fitnessSum)-1] )
-            r2 = random.uniform(0, fitnessSum[len(fitnessSum)-1] )
-            nn1 = self.population[bisect.bisect_right(fitnessSum, r1)-1]
-            nn2 = self.population[bisect.bisect_right(fitnessSum, r2)-1]
-            nextGen.append( self.createChild(nn1, nn2) )
-        self.population.clear()
-        self.population = nextGen
-
-MAX_GENERATIONS = 5
-MAX_STEPS = 500 
-POPULATION_COUNT = 5
-MUTATION_RATE = 0.001
-
-
-env = gym.make('CartPole-v1')
-observation = env.reset()
-
-in_dimen = env.observation_space.shape[0]
-out_dimen = env.action_space.n
-pop = Population(POPULATION_COUNT, MUTATION_RATE, [in_dimen, 8, 8, out_dimen])
-
-bestNeuralNets = []
-
-for gen in range(MAX_GENERATIONS):
-    genAvgFit = 0.0
-    maxFit = 0.0
-    maxNeuralNet = None
-    for nn in pop.population:
-        totalReward = 0
-        
-        for step in range(MAX_STEPS):
-            env.render()
-            action = nn.getOutput(observation)
-            observation, reward, done, info = env.step(action)
-            totalReward += reward
-            if done:
-                observation = env.reset()
-                break
-        nn.fitness = totalReward
-        genAvgFit += nn.fitness
-        if nn.fitness > maxFit :
-            maxFit = nn.fitness
-            maxNeuralNet = nn
-
-    bestNeuralNets.append(maxNeuralNet)
-    genAvgFit/=pop.popCount
-    print("Generation : %3d |  Avg Fitness : %4.0f  |  Max Fitness : %4.0f  " % (gen+1, genAvgFit, maxFit) )
-    pop.createNewGeneration()
-        
-env.close()
-
-uploadSimulation()
-
 
 # added unpacking of genome:
 class CTRNN_agent(object):
     
     """ Continuous Time Recurrent Neural Network agent. """
     
-    n_observations = 4;
+    n_observations = 2;
     n_actions = 1;
     
     def __init__(self, network_size, genome = [], weights=[], taus = [], gains = [], biases = []):
@@ -158,60 +52,23 @@ class CTRNN_agent(object):
             self.gains = gains
     
     def act(self, observation, reward, done):
-        external_inputs = np.asarray([0]*self.network_size)
+        external_inputs = np.asarray([0.0]*self.network_size)
         external_inputs[0:self.n_observations] = observation
         self.cns.euler_step(external_inputs)
-        output = sigmoid(external_inputs)
-        # (self.cns.outputs[-self.n_actions:])
+        output = 2.0 * (self.cns.outputs[-self.n_actions:] - 0.5)
         return output
-
-def run_cartpole(agent, simulation_seed=0, n_episodes=1, env=gym.make('CartPole-v1'), max_steps = 1000, graphics=False):
-
-    env.seed(simulation_seed)
-
-    reward = 0
-    cumulative_reward = 0
-    done = False
-    step = 0
-
-    for i in range(n_episodes):
-        ob = env.reset()
-        while True:
-            action = agent.act(ob, reward, done)
-            ob, reward, done, _ = env.step(action)
-            cumulative_reward += reward
-            step += 1
-            if(step >= max_steps):
-                done = True
-            if(graphics):
-                env.render()
-            if done:
-                break
-
-    # env.close()    
-    
-    return cumulative_reward;
 
 def evaluate(genome, seed = 0, graphics = False, original_reward=True):
     # create the phenotype from the genotype:
-    n_neurons  = 10
-    weights = np.zeros([n_neurons, n_neurons])
-    taus = np.asarray([0.1]*n_neurons)
-    gains = np.ones([n_neurons,])
-    biases = np.zeros([n_neurons,])
-    agent = CTRNN_agent(n_neurons, weights=weights, taus = taus, gains = gains, biases = biases)
-    reward = run_cartpole(agent, simulation_seed=0, env=gym.make('CartPole-v0'), graphics=True)
-
+    n_neurons = 10
     agent = CTRNN_agent(n_neurons, genome=genome)
-    
     # run the agent:
     if(original_reward):
-        reward = run_cartpole(agent, simulation_seed=seed, graphics=graphics)
+        reward = run_cart.run_cart_continuous(agent, simulation_seed=seed, graphics=graphics)
     else:
-        reward = run_cartpole(agent, env=gym.make('CartPole-v0'), simulation_seed=seed, graphics=graphics)
+        reward = run_cart.run_cart_continuous(agent, env=run_cart.CMC_original(), simulation_seed=seed, graphics=graphics)
     #print('Reward = ' + str(reward))
     return reward
-
 
 def test_best(Best, original_reward=True):    
     n_tests = 30
@@ -229,8 +86,8 @@ network_size = 10
 genome_size = (network_size+3)*network_size
 
 # Evolutionary algorithm:
-n_individuals = 1
-n_generations = 5
+n_individuals = 30
+n_generations = 30
 p_mut = 0.05
 n_best = 3
 
@@ -242,52 +99,69 @@ max_fitness = np.zeros([n_generations,])
 mean_fitness = np.zeros([n_generations,])
 Best = []
 fitness_best = []
-
 for g in range(n_generations):
-    for i in range (n_individuals):
-        Reward[i] = evaluate(Population[i, :], original_reward=original_reward)
-
-
-# for g in range(n_generations):
     
-#     # evaluate:
-#     for i in range(n_individuals):
-#         Reward[i] = evaluate(Population[i, :], original_reward=original_reward)
-#     mean_fitness[g] = np.mean(Reward)
-#     max_fitness[g] = np.max(Reward)
-#     print('Generation {}, mean = {} max = {}'.format(g, mean_fitness[g], max_fitness[g]))
-#     # select:
-#     inds = np.argsort(Reward)
-#     inds = inds[-n_best:]
-#     if(len(Best) == 0 or Reward[-1] > fitness_best):
-#         Best = Population[inds[-1], :] 
-#         fitness_best = Reward[-1]
-#     # vary:
-#     NewPopulation = np.zeros([n_individuals, genome_size])
-#     for i in range(n_individuals):
-#         ind = inds[i % n_best]
-#         NewPopulation[i,:] = Population[ind, :]
-#         for gene in range(genome_size):
-#             if(np.random.rand() <= p_mut):
-#                 NewPopulation[i,gene] = np.random.rand()
-#     Population = NewPopulation
+    # evaluate:
+    for i in range(n_individuals):
+        Reward[i] = evaluate(Population[i, :], original_reward=original_reward)
+    mean_fitness[g] = np.mean(Reward)
+    max_fitness[g] = np.max(Reward)
+    print('Generation {}, mean = {} max = {}'.format(g, mean_fitness[g], max_fitness[g]))
+    # select:
+    inds = np.argsort(Reward)
+    inds = inds[-n_best:]
+    if(len(Best) == 0 or Reward[-1] > fitness_best):
+        Best = Population[inds[-1], :]
+        fitness_best = Reward[-1]
+    # vary:
+    NewPopulation = np.zeros([n_individuals, genome_size])
+    for i in range(n_individuals):
+        ind = inds[i % n_best]
+        NewPopulation[i,:] = Population[ind, :]
+        for gene in range(genome_size):
+            if(np.random.rand() <= p_mut):
+                NewPopulation[i,gene] = np.random.rand()
+    Population = NewPopulation
 
-# print('Best fitness ' + str(fitness_best))
-# print('Genome = ')
-# for gene in range(len(Best)):
-#     if(gene == 0):
-#         print('[' + str(Best[gene]) + ', ', end='');
-#     elif(gene == len(Best)-1):
-#         print(str(Best[gene]) + ']');
-#     else:
-#         print(str(Best[gene]) + ', ', end='');
+print('Best fitness ' + str(fitness_best))
+print('Genome = ')
+for gene in range(len(Best)):
+    if(gene == 0):
+        print('[' + str(Best[gene]) + ', ', end='');
+    elif(gene == len(Best)-1):
+        print(str(Best[gene]) + ']');
+    else:
+        print(str(Best[gene]) + ', ', end='');
 
-# plt.figure();
-# plt.plot(range(n_generations), mean_fitness)
-# plt.plot(range(n_generations), max_fitness)
-# plt.xlabel('Generations')
-# plt.ylabel('Fitness')
-# plt.legend(['Mean fitness', 'Max fitness'])
+plt.figure();
+plt.plot(range(n_generations), mean_fitness)
+plt.plot(range(n_generations), max_fitness)
+plt.xlabel('Generations')
+plt.ylabel('Fitness')
+plt.legend(['Mean fitness', 'Max fitness'])
 
-# evaluate(Best, graphics=True)
-# test_best(Best)
+evaluate(Best, graphics=True)
+test_best(Best)
+
+# [0.45171336 0.56884579 0.56491725 0.52454626 0.62193989 0.93614712
+# 0.11661162 0.85653936 0.8252461  0.58089882 0.49492735 0.29667685
+# 0.37451896 0.28677048 0.58993811 0.40936107 0.58782825 0.80730997
+# 0.01144499 0.24997571 0.96522433 0.43802989 0.85582822 0.68161953
+# 0.09922401 0.00944109 0.48865537 0.67333867 0.46357003 0.13809677
+# 0.61378884 0.01584258 0.40355504 0.91482147 0.104826   0.08818507
+# 0.19016941 0.66526232 0.63112008 0.05886177 0.92747044 0.15039487
+# 0.90581753 0.40119454 0.1405474  0.59073871 0.61410107 0.59311201
+# 0.08417983 0.56294264 0.1569458  0.51982971 0.92425958 0.78642168
+# 0.16405216 0.41192316 0.47124697 0.00402501 0.31529679 0.3304696
+# 0.79951395 0.61514499 0.23998659 0.75974331 0.74741824 0.05070599
+# 0.81349603 0.17996044 0.78620247 0.57800292 0.26622618 0.88572737
+# 0.15759135 0.32968242 0.29482816 0.8173645  0.10642025 0.28714128
+# 0.90271657 0.12750287 0.80017311 0.14303477 0.39791978 0.06028407
+# 0.30904659 0.19234539 0.40238758 0.77492678 0.19980607 0.40104742
+# 0.03819147 0.60142126 0.49926754 0.9275328  0.24308627 0.76369425
+# 0.11618019 0.54042436 0.11330077 0.50906504 0.46958862 0.58632169
+# 0.36078934 0.22232279 0.21377307 0.50852865 0.03993209 0.99276823
+# 0.04907156 0.96038988 0.6755306  0.35899863 0.36131098 0.05907509
+# 0.11244481 0.24913528 0.99368481 0.92319233 0.5096662  0.972418
+# 0.29104816 0.04881569 0.92633616 0.85156212 0.62426413 0.68661007
+# 0.93283555 0.68723513 0.79902284 0.49577034]
