@@ -7,6 +7,74 @@ import numpy as np
 def sigmoid(x):
     return 1.0/(1.0 + np.exp(-x))
 
+
+class NN_agent :
+    
+    def __init__(self, n_nodes):     
+
+        self.fitness = 0
+        self.nodes = n_nodes
+        self.weights = []
+        self.biases = []
+        for i in range(len(n_nodes) - 1):
+            self.weights.append( np.random.uniform(low=-1, high=1, size=(n_nodes[i], n_nodes[i+1])).tolist() )
+            self.biases.append( np.random.uniform(low=-1, high=1, size=(n_nodes[i+1])).tolist())
+
+  
+    def getoutput(self, input):
+
+        output = input
+        for i in range(len(self.nodes)-1):
+            output = np.reshape(np.matmul(output, self.weights[i]) + self.biases[i], (self.nodes[i+1]))
+        return np.argmax(sigmoid(output))
+
+class Population :
+
+    def __init__(self, populationCount, mutationRate, n_nodes):
+        self.nodeCount = n_nodes
+        self.popCount = populationCount
+        self.m_rate = mutationRate
+        self.population = [NN_agent(n_nodes) for i in range(populationCount)]
+
+
+    def createChild(self, nn1, nn2):
+        
+        child = NN_agent(self.nodeCount)
+
+        for i in range(len(child.weights)):
+            for j in range(len(child.weights[i])):
+                for k in range(len(child.weights[i][j])):
+                    if random.random() < self.m_rate:
+                        child.weights[i][j][k] = random.uniform(-1, 1)
+                    else:
+                        child.weights[i][j][k] = (nn1.weights[i][j][k] + nn2.weights[i][j][k])/2.0
+
+        for i in range(len(child.biases)):
+            for j in range(len(child.biases[i])):
+                if random.random() < self.m_rate:
+                    child.biases[i][j] = random.uniform(-1, 1)
+                else:
+                    child.biases[i][j] = (nn1.biases[i][j] + nn2.biases[i][j])/2.0
+
+        return child
+
+
+    def createNewGeneration(self):       
+        nextGen = []
+        fitnessSum = [0]
+        for i in range(len(self.population)):
+            fitnessSum.append(fitnessSum[i]+self.population[i].fitness)
+        
+        while(len(nextGen) < self.popCount):
+            r1 = random.uniform(0, fitnessSum[len(fitnessSum)-1] )
+            r2 = random.uniform(0, fitnessSum[len(fitnessSum)-1] )
+            nn1 = self.population[bisect.bisect_right(fitnessSum, r1)-1]
+            nn2 = self.population[bisect.bisect_right(fitnessSum, r2)-1]
+            nextGen.append( self.createChild(nn1, nn2) )
+        self.population.clear()
+        self.population = nextGen
+
+
 # added unpacking of genome:
 class CTRNN_agent(object):
     
