@@ -110,17 +110,6 @@ class Population :
 #                 if done:
 #                     break
             
-
-def uploadSimulation():
-    
-    #choice = input("\nDo you want to upload the simulation ?[Y/N] : ")
-    #if choice=='Y' or choice=='y':
-        #partialKey = input("\nEnter last 2 characters of API Key : ")
-        partialKey = 'cQ'
-        gym.upload('Artificial Intelligence/CartPole v1', api_key='sk_pwRfoNpISVKq3o88csB'+partialKey)
-
-
-
 MAX_GENERATIONS = 5
 MAX_STEPS = 500 
 POPULATION_COUNT = 5
@@ -164,5 +153,4 @@ for gen in range(MAX_GENERATIONS):
         
 env.close()
 
-uploadSimulation()
 
