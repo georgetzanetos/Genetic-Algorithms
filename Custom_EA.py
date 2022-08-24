@@ -1,6 +1,5 @@
 from matplotlib import pyplot as plt
-import time, math, random, bisect
-from scipy.sparse import csr_matrix
+import random, bisect
 import gym
 import numpy as np
 
@@ -30,11 +29,11 @@ class NN_agent :
 
 class Population :
 
-    def __init__(self, populationCount, p_mut, n_nodes):
+    def __init__(self, n_individuals, p_mut, n_nodes):
         self.nodeCount = n_nodes
-        self.popCount = populationCount
+        self.popCount = n_individuals
         self.m_rate = p_mut
-        self.population = [NN_agent(n_nodes) for i in range(populationCount)]
+        self.population = [NN_agent(n_nodes) for i in range(n_individuals)]
 
 
     def createOffspring(self, nn1, nn2):
@@ -59,20 +58,20 @@ class Population :
         return offspring
 
 
-    def createNewGeneration(self):       
-        nextGen = []
-        fitnessSum = [0]
+    def newGen(self):       
+        total_fitness = []
+        next_gen = []
         for i in range(len(self.population)):
-            fitnessSum.append(fitnessSum[i]+self.population[i].fitness)
+            total_fitness.append(total_fitness[i]+self.population[i].fitness)
         
-        while(len(nextGen) < self.popCount):
-            r1 = random.uniform(0, fitnessSum[len(fitnessSum)-1] )
-            r2 = random.uniform(0, fitnessSum[len(fitnessSum)-1] )
-            nn1 = self.population[bisect.bisect_right(fitnessSum, r1)-1]
-            nn2 = self.population[bisect.bisect_right(fitnessSum, r2)-1]
-            nextGen.append( self.createOffspring(nn1, nn2) )
+        while(len(next_gen) < self.popCount):
+            r1 = random.uniform(0, total_fitness[len(total_fitness)-1] )
+            r2 = random.uniform(0, total_fitness[len(total_fitness)-1] )
+            nn1 = self.population[bisect.bisect_right(total_fitness, r1)-1]
+            nn2 = self.population[bisect.bisect_right(total_fitness, r2)-1]
+            next_gen.append(self.createOffspring(nn1, nn2))
         self.population.clear()
-        self.population = nextGen
+        self.population = next_gen
 
 MAX_GENERATIONS = 30
 MAX_STEPS = 500 
@@ -87,13 +86,13 @@ dim_in = env.observation_space.shape[0]
 dim_out = env.action_space.n
 pop = Population(POPULATION_COUNT, MUTATION_RATE, [dim_in, 8, 8, dim_out])
 
-bestNeuralNets = []
+# bestNeuralNets = []
 MAXFIT = []
 AVGFIT = []
 
 for gen in range(MAX_GENERATIONS):
-    genAvgFit = 0.0
-    maxFit = 0.0
+    max = 0
+    avg = 0
     maxNeuralNet = None
     for nn in pop.population:
         totalReward = 0
@@ -107,17 +106,17 @@ for gen in range(MAX_GENERATIONS):
                 observation = env.reset()
                 break
         nn.fitness = totalReward
-        genAvgFit += nn.fitness
-        if nn.fitness > maxFit :
-            maxFit = nn.fitness
+        avg += nn.fitness
+        if nn.fitness > max :
+            max = nn.fitness
             maxNeuralNet = nn
 
-    bestNeuralNets.append(maxNeuralNet)
-    genAvgFit/=pop.popCount
-    print("Generation : %3d |  Avg Fitness : %4.0f  |  Max Fitness : %4.0f  " % (gen+1, genAvgFit, maxFit) )
-    MAXFIT.append(maxFit) 
-    AVGFIT.append(genAvgFit)
-    pop.createNewGeneration()
+    # bestNeuralNets.append(maxNeuralNet)
+    avg/=pop.popCount
+    print("Generation : %3d |  Avg Fitness : %4.0f  |  Max Fitness : %4.0f  " % (gen+1, avg, max) )
+    MAXFIT.append(max) 
+    AVGFIT.append(avg)
+    pop.newGen()
         
 env.close()
 
