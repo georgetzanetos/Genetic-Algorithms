@@ -1,6 +1,6 @@
+import gym
 from matplotlib import pyplot as plt
 import random, bisect
-import gym
 import numpy as np
 
 def sigmoid(x):
@@ -16,7 +16,9 @@ class NN_agent :
         self.weights = []
         self.biases = []
         for i in range(len(n_nodes) - 1):
+            # np.random.seed(1)
             self.weights.append(np.random.uniform(low=-1, high=1, size=(n_nodes[i], n_nodes[i+1])).tolist())
+            # np.random.seed(2)
             self.biases.append(np.random.uniform(low=-1, high=1, size=(n_nodes[i+1])).tolist())
 
   
@@ -43,14 +45,18 @@ class Population :
         for i in range(len(offspring.weights)):
             for j in range(len(offspring.weights[i])):
                 for k in range(len(offspring.weights[i][j])):
+                    # random.seed(2)
                     if random.random() < self.m_rate:
+                        # random.seed(3)
                         offspring.weights[i][j][k] = random.uniform(-1, 1)
                     else:
                         offspring.weights[i][j][k] = (nn1.weights[i][j][k] + nn2.weights[i][j][k])/2.0
 
         for i in range(len(offspring.biases)):
             for j in range(len(offspring.biases[i])):
+                # random.seed(4)
                 if random.random() < self.m_rate:
+                    # random.seed(5)
                     offspring.biases[i][j] = random.uniform(-1, 1)
                 else:
                     offspring.biases[i][j] = (nn1.biases[i][j] + nn2.biases[i][j])/2.0
@@ -59,13 +65,15 @@ class Population :
 
 
     def newGen(self):       
-        total_fitness = []
+        total_fitness = [0]
         next_gen = []
         for i in range(len(self.population)):
             total_fitness.append(total_fitness[i]+self.population[i].fitness)
         
         while(len(next_gen) < self.popCount):
+            # random.seed(6)
             r1 = random.uniform(0, total_fitness[len(total_fitness)-1] )
+            # random.seed(7)
             r2 = random.uniform(0, total_fitness[len(total_fitness)-1] )
             nn1 = self.population[bisect.bisect_right(total_fitness, r1)-1]
             nn2 = self.population[bisect.bisect_right(total_fitness, r2)-1]
@@ -73,11 +81,10 @@ class Population :
         self.population.clear()
         self.population = next_gen
 
-MAX_GENERATIONS = 30
+MAX_GENERATIONS = 10
 MAX_STEPS = 500 
-POPULATION_COUNT = 30
+POPULATION_COUNT = 10
 MUTATION_RATE = 0.05
-
 
 env = gym.make('CartPole-v1')
 observation = env.reset()
@@ -94,6 +101,7 @@ for gen in range(MAX_GENERATIONS):
     max = 0
     avg = 0
     maxNeuralNet = None
+
     for nn in pop.population:
         totalReward = 0
         
@@ -111,7 +119,6 @@ for gen in range(MAX_GENERATIONS):
             max = nn.fitness
             maxNeuralNet = nn
 
-    # bestNeuralNets.append(maxNeuralNet)
     avg/=pop.popCount
     print("Generation : %3d |  Avg Fitness : %4.0f  |  Max Fitness : %4.0f  " % (gen+1, avg, max) )
     MAXFIT.append(max) 
