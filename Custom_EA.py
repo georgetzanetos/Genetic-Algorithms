@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 import random, bisect
 import numpy as np
 
+#sigmoid activation function
 def sigmoid(x):
     return 1.0/(1.0 + np.exp(-x))
 
@@ -21,7 +22,7 @@ class NN_agent :
             # np.random.seed(2)
             self.biases.append(np.random.uniform(low=-1, high=1, size=(n_nodes[i+1])).tolist())
 
-  
+    #evaluation
     def getOutput(self, input):
 
         output = input
@@ -37,7 +38,7 @@ class Population :
         self.m_rate = p_mut
         self.population = [NN_agent(n_nodes) for i in range(n_individuals)]
 
-
+    #variation
     def createOffspring(self, nn1, nn2):
         
         offspring = NN_agent(self.nodeCount)
@@ -63,7 +64,7 @@ class Population :
 
         return offspring
 
-
+    #selection
     def newGen(self):       
         total_fitness = [0]
         next_gen = []
@@ -81,7 +82,7 @@ class Population :
         self.population.clear()
         self.population = next_gen
 
-MAX_GENERATIONS = 50
+MAX_GENERATIONS = 30
 MAX_STEPS = 500 
 POPULATION_COUNT = 30
 MUTATION_RATE = 0.02
