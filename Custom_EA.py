@@ -81,10 +81,10 @@ class Population :
         self.population.clear()
         self.population = next_gen
 
-MAX_GENERATIONS = 10
+MAX_GENERATIONS = 50
 MAX_STEPS = 500 
-POPULATION_COUNT = 10
-MUTATION_RATE = 0.05
+POPULATION_COUNT = 30
+MUTATION_RATE = 0.02
 
 env = gym.make('CartPole-v1')
 observation = env.reset()
@@ -93,7 +93,6 @@ dim_in = env.observation_space.shape[0]
 dim_out = env.action_space.n
 pop = Population(POPULATION_COUNT, MUTATION_RATE, [dim_in, 8, 8, dim_out])
 
-# bestNeuralNets = []
 MAXFIT = []
 AVGFIT = []
 
