@@ -3,6 +3,9 @@ from matplotlib import pyplot as plt
 import random, bisect
 import numpy as np
 
+seed=10
+np.random.seed(seed)
+
 #sigmoid activation function
 def sigmoid(x):
     return 1.0/(1.0 + np.exp(-x))
@@ -12,15 +15,19 @@ class NN_agent :
     
     def __init__(self, n_nodes):     
 
+        global seed
+
         self.fitness = 0
         self.nodes = n_nodes
         self.weights = []
         self.biases = []
         for i in range(len(n_nodes) - 1):
-            # np.random.seed(1)
+            np.random.seed(seed)
             self.weights.append(np.random.uniform(low=-1, high=1, size=(n_nodes[i], n_nodes[i+1])).tolist())
-            # np.random.seed(2)
+            seed+=1
+            np.random.seed(seed)
             self.biases.append(np.random.uniform(low=-1, high=1, size=(n_nodes[i+1])).tolist())
+            seed+=1
 
     #evaluation
     def getOutput(self, input):
@@ -40,52 +47,65 @@ class Population :
 
     #variation
     def createOffspring(self, nn1, nn2):
+
+        global seed
         
         offspring = NN_agent(self.nodeCount)
 
         for i in range(len(offspring.weights)):
             for j in range(len(offspring.weights[i])):
                 for k in range(len(offspring.weights[i][j])):
-                    # random.seed(2)
+                    random.seed(seed)
                     if random.random() < self.m_rate:
-                        # random.seed(3)
+                        seed+=1
+                        random.seed(seed)
                         offspring.weights[i][j][k] = random.uniform(-1, 1)
+                        seed+=1
                     else:
                         offspring.weights[i][j][k] = (nn1.weights[i][j][k] + nn2.weights[i][j][k])/2.0
+                        seed+=1
 
         for i in range(len(offspring.biases)):
             for j in range(len(offspring.biases[i])):
-                # random.seed(4)
+                random.seed(seed)
                 if random.random() < self.m_rate:
-                    # random.seed(5)
+                    seed+=1
+                    random.seed(seed)
                     offspring.biases[i][j] = random.uniform(-1, 1)
+                    seed+=1
                 else:
                     offspring.biases[i][j] = (nn1.biases[i][j] + nn2.biases[i][j])/2.0
+                    seed+=1
 
         return offspring
 
     #selection
     def newGen(self):       
+
+        global seed 
+
         total_fitness = [0]
         next_gen = []
         for i in range(len(self.population)):
             total_fitness.append(total_fitness[i]+self.population[i].fitness)
         
         while(len(next_gen) < self.popCount):
-            # random.seed(6)
+            random.seed(seed)
             r1 = random.uniform(0, total_fitness[len(total_fitness)-1] )
-            # random.seed(7)
+            seed+=1
+            random.seed(seed)
             r2 = random.uniform(0, total_fitness[len(total_fitness)-1] )
+            seed+=1
             nn1 = self.population[bisect.bisect_right(total_fitness, r1)-1]
             nn2 = self.population[bisect.bisect_right(total_fitness, r2)-1]
             next_gen.append(self.createOffspring(nn1, nn2))
         self.population.clear()
         self.population = next_gen
 
-MAX_GENERATIONS = 30
+MAX_GENERATIONS = 10
 MAX_STEPS = 500 
-POPULATION_COUNT = 30
-MUTATION_RATE = 0.02
+POPULATION_COUNT = 10
+MUTATION_RATE = 0.01
 
 env = gym.make('CartPole-v1')
 observation = env.reset()
