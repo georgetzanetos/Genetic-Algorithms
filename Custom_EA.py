@@ -5,6 +5,7 @@ import numpy as np
 
 seed=10
 np.random.seed(seed)
+random.seed(seed)
 
 #sigmoid activation function
 def sigmoid(x):
