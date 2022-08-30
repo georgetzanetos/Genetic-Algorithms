@@ -102,22 +102,22 @@ class Population :
         self.population.clear()
         self.population = next_gen
 
-MAX_GENERATIONS = 10
-MAX_STEPS = 500 
-POPULATION_COUNT = 10
-MUTATION_RATE = 0.01
+GENERATIONS = 30
+STEPS = 500 
+POPULATION = 30
+MUTATION = 0.01
 
 env = gym.make('CartPole-v1')
 observation = env.reset()
 
 dim_in = env.observation_space.shape[0]
 dim_out = env.action_space.n
-pop = Population(POPULATION_COUNT, MUTATION_RATE, [dim_in, 8, 8, dim_out])
+pop = Population(POPULATION, MUTATION, [dim_in, 8, 8, dim_out])
 
 MAXFIT = []
 AVGFIT = []
 
-for gen in range(MAX_GENERATIONS):
+for gen in range(GENERATIONS):
     max = 0
     avg = 0
     maxNeuralNet = None
@@ -125,7 +125,7 @@ for gen in range(MAX_GENERATIONS):
     for nn in pop.population:
         totalReward = 0
         
-        for step in range(MAX_STEPS):
+        for step in range(STEPS):
             env.render()
             action = nn.getOutput(observation)
             observation, reward, done, info = env.step(action)
@@ -148,9 +148,10 @@ for gen in range(MAX_GENERATIONS):
 env.close()
 
 plt.figure();
-plt.plot(range(MAX_GENERATIONS), AVGFIT)
-plt.plot(range(MAX_GENERATIONS), MAXFIT)
+plt.plot(range(GENERATIONS), AVGFIT)
+plt.plot(range(GENERATIONS), MAXFIT)
 plt.xlabel('Generations')
 plt.ylabel('Fitness')
 plt.legend(['Mean fitness', 'Max fitness'])
+plt.grid()
 plt.show()
