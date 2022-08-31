@@ -89,11 +89,11 @@ class Population :
         global seed 
 
         total_fitness = [0]
-        next_gen = []
+        new_gen = []
         for i in range(len(self.population)):
             total_fitness.append(total_fitness[i]+self.population[i].fitness)
             
-        while(len(newGen) < self.popCount):
+        while(len(new_gen) < self.pop_size):
             random.seed(seed)
             r1 = random.uniform(0, total_fitness[len(total_fitness)-1] )
             seed+=1
@@ -102,21 +102,21 @@ class Population :
             seed+=1
             nn1 = self.population[bisect.bisect_right(total_fitness, r1)-1]
             nn2 = self.population[bisect.bisect_right(total_fitness, r2)-1]
-            next_gen.append(self.createOffspring(nn1, nn2))
+            new_gen.append(self.createOffspring(nn1, nn2))
         self.population.clear()
-        self.population = next_gen
+        self.population = new_gen
 
 STEPS = 500 
 GENS = 30
 POPULATION = 30
-MUTATION = 0.01
+MUTATION = 0.001
 
 env = gym.make('CartPole-v1')
 
 observation = env.reset()
 dim_in = env.observation_space.shape[0]
 dim_out = env.action_space.n
-pop = Population(POPULATION, MUTATION, [dim_in, 4, 4, dim_out])
+pop = Population(POPULATION, MUTATION, [dim_in, 8, 8, dim_out])
 
 MAXFIT = []
 AVGFIT = []
@@ -161,5 +161,3 @@ plt.ylabel('Fitness')
 plt.legend(['Mean fitness', 'Max fitness'])
 plt.grid()
 plt.show()
-
-print(TopGenome)
