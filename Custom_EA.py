@@ -4,8 +4,8 @@ import random, bisect
 import numpy as np
 
 seed=10
-np.random.seed(seed)
-random.seed(seed)
+# np.random.seed(seed)
+# random.seed(seed)
 
 #sigmoid activation function
 def sigmoid(x):
@@ -103,9 +103,9 @@ class Population :
         self.population.clear()
         self.population = next_gen
 
-GENERATIONS = 2
+GENERATIONS = 30
 STEPS = 500 
-POPULATION = 10
+POPULATION = 30
 MUTATION = 0.01
 
 env = gym.make('CartPole-v1')
@@ -113,7 +113,7 @@ observation = env.reset()
 
 dim_in = env.observation_space.shape[0]
 dim_out = env.action_space.n
-pop = Population(POPULATION, MUTATION, [dim_in, 8, 8, dim_out])
+pop = Population(POPULATION, MUTATION, [dim_in, 8, 16, dim_out])
 
 MAXFIT = []
 AVGFIT = []
