@@ -20,7 +20,7 @@ class NN_agent :
 
         self.weights = []
         self.biases = []
-        
+
         self.fitness = 0
         self.nodes = n_nodes
 
@@ -92,8 +92,8 @@ class Population :
         next_gen = []
         for i in range(len(self.population)):
             total_fitness.append(total_fitness[i]+self.population[i].fitness)
-        
-        
+            
+        while(len(newGen) < self.popCount):
             random.seed(seed)
             r1 = random.uniform(0, total_fitness[len(total_fitness)-1] )
             seed+=1
@@ -116,7 +116,7 @@ env = gym.make('CartPole-v1')
 observation = env.reset()
 dim_in = env.observation_space.shape[0]
 dim_out = env.action_space.n
-pop = Population(POPULATION, MUTATION, [dim_in, 8, 8, dim_out])
+pop = Population(POPULATION, MUTATION, [dim_in, 4, 4, dim_out])
 
 MAXFIT = []
 AVGFIT = []
@@ -145,7 +145,7 @@ for gen in range(GENS):
             max = genome.fitness
             TopGenome = genome
 
-    avg/=pop.popCount
+    avg/=pop.pop_size
     print("Generation : %3d |  Avg Fitness : %4.0f  |  Max Fitness : %4.0f  " % (gen+1, avg, max) )
     MAXFIT.append(max) 
     AVGFIT.append(avg)

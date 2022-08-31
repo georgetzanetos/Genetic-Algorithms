@@ -92,7 +92,7 @@ class Population :
             r2 = random.uniform(0, fitnessSum[len(fitnessSum)-1] )
             nn1 = self.population[bisect.bisect_right(fitnessSum, r1)-1]
             nn2 = self.population[bisect.bisect_right(fitnessSum, r2)-1]
-            nextGen.append( self.createChild(nn1, nn2) )
+            nextGen.append(self.createChild(nn1, nn2))
         self.population.clear()
         self.population = nextGen
 
