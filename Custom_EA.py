@@ -18,10 +18,12 @@ class NN_agent :
 
         global seed
 
-        self.fitness = 0
-        self.nodes = n_nodes
         self.weights = []
         self.biases = []
+        
+        self.fitness = 0
+        self.nodes = n_nodes
+
         for i in range(len(n_nodes) - 1):
             np.random.seed(seed)
             self.weights.append(np.random.uniform(low=-1, high=1, size=(n_nodes[i], n_nodes[i+1])).tolist())
