@@ -1,7 +1,9 @@
 import gym
 from matplotlib import pyplot as plt
-import random, bisect
+import random, bisect, timeit
 import numpy as np
+
+start = timeit.default_timer()
 
 seed=10
 # np.random.seed(seed)
@@ -187,4 +189,6 @@ plt.legend(['Mean fitness', 'Max fitness'])
 plt.grid()
 plt.show()
 
-print(TopGenome)
+stop = timeit.default_timer()
+
+print('Time: ', stop - start) 
