@@ -109,12 +109,12 @@ class Population :
         while(len(new_gen) < self.pop_size):
 
             random.seed(seed)
-            r1 = random.randint(0, len(elite))
+            r1 = random.choice(elite)
             seed+=1
             parent1 = self.population[r1]
 
             random.seed(seed)
-            r2 = random.randint(0, len(elite))
+            r2 = random.choice(elite)
             seed+=1
             parent2 = self.population[r2]
 
@@ -128,7 +128,7 @@ GENS = 30
 POPULATION = 30
 MUTATION = 0.01
 MIGRATION = 0.5
-ELITISM = 4
+ELITISM = 12
 
 env = gym.make('CartPole-v1')
 

@@ -109,7 +109,7 @@ class Population :
 STEPS = 500 
 GENS = 30
 POPULATION = 30
-MUTATION = 0.001
+MUTATION = 0.01
 
 env = gym.make('CartPole-v1')
 
