@@ -97,7 +97,7 @@ class Population :
         for i in range(len(self.population)):
             total_fitness.append(total_fitness[i]+self.population[i].fitness)
 
-        for i in range(elite):
+        for i in range(len(elite)):
             new_gen.append(self.population[elite[i]])
             
         while(len(new_gen) < self.pop_size*migration_ratio):

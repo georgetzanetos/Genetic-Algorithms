@@ -1,7 +1,9 @@
 import gym
 from matplotlib import pyplot as plt
-import random, bisect
+import random, bisect, timeit
 import numpy as np
+
+start = timeit.default_timer()
 
 seed=10
 # np.random.seed(seed)
@@ -108,7 +110,7 @@ class Population :
 
 STEPS = 500 
 GENS = 30
-POPULATION = 30
+POPULATION = 20
 MUTATION = 0.01
 
 env = gym.make('CartPole-v1')
@@ -161,3 +163,5 @@ plt.ylabel('Fitness')
 plt.legend(['Mean fitness', 'Max fitness'])
 plt.grid()
 plt.show()
+
+print('Time: ', stop - start) 
