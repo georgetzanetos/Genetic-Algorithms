@@ -94,6 +94,9 @@ class Population :
 
         for i in range(len(self.population)):
             total_fitness.append(total_fitness[i]+self.population[i].fitness)
+
+        for i in range(elite):
+            new_gen.append(self.population[elite[i]])
             
         while(len(new_gen) < self.pop_size*migration_ratio):
             random.seed(seed)
@@ -128,7 +131,7 @@ GENS = 30
 POPULATION = 30
 MUTATION = 0.01
 MIGRATION = 0.5
-ELITISM = 12
+ELITISM = 5
 
 env = gym.make('CartPole-v1')
 
