@@ -3,17 +3,13 @@ from matplotlib import pyplot as plt
 import random, bisect, timeit
 import numpy as np
 
+# Start timer
 start = timeit.default_timer()
 
+# Set initial seed
 seed=10
-# np.random.seed(seed)
-# random.seed(seed)
 
-#sigmoid activation function
-def sigmoid(x):
-    return 1.0/(1.0 + np.exp(-x))
-
-
+# Agent
 class NN_agent :
     
     def __init__(self, n_nodes):     
@@ -35,23 +31,59 @@ class NN_agent :
             seed+=1
 
     #evaluation
-    def getOutput(self, input):
+    def evaluate(self, input):
 
         output = input
         for i in range(len(self.nodes)-1):
             output = np.reshape(np.matmul(output, self.weights[i]) + self.biases[i], (self.nodes[i+1]))
         return np.argmax(sigmoid(output))
 
+# Sigmoid activation function
+def sigmoid(x):
+    return 1.0/(1.0 + np.exp(-x))
+
+# Evolutionary algorithm
 class Population :
 
     def __init__(self, n_individuals, p_mut, n_nodes):
-        
+
+        self.n_nodes = n_nodes        
         self.population = [NN_agent(n_nodes) for i in range(n_individuals)]
-        self.n_nodes = n_nodes
         self.pop_size = n_individuals
         self.m_rate = p_mut
-        
-    #variation
+
+    '''
+    Selection: Two randomly-selected parents are chosen, before being passed into createOffspring().
+    This is done in a while-loop, until the population size is reached.
+
+    ''' 
+    def newGen(self):       
+
+        global seed 
+
+        total_fitness = [0]
+        new_gen = []
+        for i in range(len(self.population)):
+            total_fitness.append(total_fitness[i]+self.population[i].fitness)
+            
+        while(len(new_gen) < self.pop_size):
+            random.seed(seed)
+            r1 = random.uniform(0, total_fitness[len(total_fitness)-1] )
+            seed+=1
+            random.seed(seed)
+            r2 = random.uniform(0, total_fitness[len(total_fitness)-1] )
+            seed+=1
+            nn1 = self.population[bisect.bisect_right(total_fitness, r1)-1]
+            nn2 = self.population[bisect.bisect_right(total_fitness, r2)-1]
+            new_gen.append(self.createOffspring(nn1, nn2))
+        self.population.clear()
+        self.population = new_gen
+
+    '''
+    Variation: Two for-loops, one for weights, one for biases. In each, first they are passed through an if-probability for mutation, or else mating.
+
+    '''
+
     def createOffspring(self, parent1, parent2):
 
         global seed
@@ -85,110 +117,83 @@ class Population :
 
         return offspring
 
-    #selection
-    def newGen(self, migration_ratio, elite):       
-
-        global seed 
-
-        total_fitness = [0]
-        new_gen = []
-        
-
-        for i in range(len(self.population)):
-            total_fitness.append(total_fitness[i]+self.population[i].fitness)
-
-        for i in range(len(elite)):
-            new_gen.append(self.population[elite[i]])
-            
-        while(len(new_gen) < self.pop_size*migration_ratio):
-            random.seed(seed)
-            r1 = random.uniform(0, total_fitness[len(total_fitness)-1] )
-            seed+=1
-            random.seed(seed)
-            r2 = random.uniform(0, total_fitness[len(total_fitness)-1] )
-            seed+=1
-            parent1 = self.population[bisect.bisect_right(total_fitness, r1)-1]
-            parent2 = self.population[bisect.bisect_right(total_fitness, r2)-1]
-            new_gen.append(self.createOffspring(parent1,parent2))
-
-        while(len(new_gen) < self.pop_size):
-
-            random.seed(seed)
-            r1 = random.choice(elite)
-            seed+=1
-            parent1 = self.population[r1]
-
-            random.seed(seed)
-            r2 = random.choice(elite)
-            seed+=1
-            parent2 = self.population[r2]
-
-            new_gen.append(self.createOffspring(parent1,parent2))
-
-        self.population.clear()
-        self.population = new_gen
-
+# Parameters
 STEPS = 500 
 GENS = 30
-POPULATION = 30
-MUTATION = 0.01
-MIGRATION = 0.5
-ELITISM = 5
+POPULATION = 40
+MUTATION = 0.001
 
+# Set up environment, agent and initial population
 env = gym.make('CartPole-v1')
-
 observation = env.reset()
 dim_in = env.observation_space.shape[0]
 dim_out = env.action_space.n
 pop = Population(POPULATION, MUTATION, [dim_in, 8, 8, dim_out])
 
+# Plot lists
 MAXFIT = []
 AVGFIT = []
 
+# Assign initial genome as top until the real top one is found
+TopGenome = pop.population[0]
+
+# Algorithm loop
 for gen in range(GENS):
+
     max = 0
     avg = 0
-    TopGenome = None
-
+    
+    # Generation loop   
     for genome in pop.population:
         Reward = 0
         
+        # Genome loop
         for step in range(STEPS):
             env.render()
-            action = genome.getOutput(observation)
+            action = genome.evaluate(observation)
             observation, reward, done, info = env.step(action)
             Reward += reward
             if done:
                 observation = env.reset()
                 break
-
+        
         genome.fitness = Reward
         avg += genome.fitness
 
         if genome.fitness > max :
             max = genome.fitness
-            TopGenome = genome
-    
-    idx = np.argsort(avg)
-    elitidx = idx[-ELITISM:]
+
 
     avg/=pop.pop_size
-    print("Generation : %3d |  Avg Fitness : %4.0f  |  Max Fitness : %4.0f  " % (gen+1, avg, max) )
+
+    print("Generation : %3d |  Avg Fitness : %4.0f  |  Max Fitness : %4.0f  " % (gen+1, avg, max))
+
     MAXFIT.append(max) 
     AVGFIT.append(avg)
-    pop.newGen(MIGRATION,elitidx)
-        
+
+    # Top Genome check
+    if TopGenome.fitness < pop.population[np.argmax(AVGFIT)].fitness:
+        TopGenome = pop.population[np.argmax(AVGFIT)]
+    pop.newGen()
+
 env.close()
 
+# Plotting
 plt.figure();
 plt.plot(range(GENS), AVGFIT)
 plt.plot(range(GENS), MAXFIT)
 plt.xlabel('Generations')
 plt.ylabel('Fitness')
 plt.legend(['Mean fitness', 'Max fitness'])
+plt.xlim([0,30])
+plt.ylim([0,500])
 plt.grid()
 plt.show()
 
-stop = timeit.default_timer()
+# Top Genome
+print(TopGenome.weights)
+print(TopGenome.biases)
 
+#Timer
+stop = timeit.default_timer()
 print('Time: ', stop - start) 

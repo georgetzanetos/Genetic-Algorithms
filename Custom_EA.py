@@ -68,14 +68,14 @@ class Population :
             
         while(len(new_gen) < self.pop_size):
             random.seed(seed)
-            r1 = random.uniform(0, total_fitness[len(total_fitness)-1] )
+            idx1 = random.uniform(0, total_fitness[len(total_fitness)-1] )
             seed+=1
             random.seed(seed)
-            r2 = random.uniform(0, total_fitness[len(total_fitness)-1] )
+            idx2 = random.uniform(0, total_fitness[len(total_fitness)-1] )
             seed+=1
-            nn1 = self.population[bisect.bisect_right(total_fitness, r1)-1]
-            nn2 = self.population[bisect.bisect_right(total_fitness, r2)-1]
-            new_gen.append(self.createOffspring(nn1, nn2))
+            parent1 = self.population[bisect.bisect_right(total_fitness, idx1)-1]
+            parent2 = self.population[bisect.bisect_right(total_fitness, idx2)-1]
+            new_gen.append(self.createOffspring(parent1, parent2))
         self.population.clear()
         self.population = new_gen
 
@@ -120,8 +120,8 @@ class Population :
 # Parameters
 STEPS = 500 
 GENS = 30
-POPULATION = 30
-MUTATION = 0.01
+POPULATION = 40
+MUTATION = 0.001
 
 # Set up environment, agent and initial population
 env = gym.make('CartPole-v1')
@@ -171,9 +171,9 @@ for gen in range(GENS):
     MAXFIT.append(max) 
     AVGFIT.append(avg)
 
-    # Top Genome check
-    if TopGenome.fitness < pop.population[np.argmax(AVGFIT)].fitness:
-        TopGenome = pop.population[np.argmax(AVGFIT)]
+    # # Top Genome check
+    # if TopGenome.fitness < pop.population[np.argmax(AVGFIT)].fitness:
+    #     TopGenome = pop.population[np.argmax(AVGFIT)]
     pop.newGen()
 
 env.close()
@@ -185,6 +185,8 @@ plt.plot(range(GENS), MAXFIT)
 plt.xlabel('Generations')
 plt.ylabel('Fitness')
 plt.legend(['Mean fitness', 'Max fitness'])
+plt.xlim([0,30])
+plt.ylim([0,500])
 plt.grid()
 plt.show()
 
