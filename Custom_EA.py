@@ -120,12 +120,11 @@ class Population :
 # Parameters
 STEPS = 500 
 GENS = 30
-POPULATION = 40
-MUTATION = 0.001
+POPULATION = 30
+MUTATION = 0.01
 
 # Set up environment, agent and initial population
 env = gym.make('CartPole-v1')
-
 observation = env.reset()
 dim_in = env.observation_space.shape[0]
 dim_out = env.action_space.n
